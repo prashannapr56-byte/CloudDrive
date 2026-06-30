@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudDrive</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav>
+        <h2>☁️ CloudDrive</h2>
+        <ul class="nav-links">
+            {% if session.get('username') %}
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="container" style="max-width: 600px;">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="flash-message {{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        {% if session.get('username') %}
+            <h1>Welcome, {{ session.username }}! 🚀</h1>
+            <p>Your secure cloud environment is ready. Start managing your files today.</p>
+            
+            <!-- Upload Form -->
+            <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" style="margin-top: 20px; align-items: center; border: 1px dashed var(--input-border); padding: 20px; border-radius: 8px; background: rgba(15,23,42,0.3); display: flex; flex-direction: column; gap: 15px;">
+                <input type="file" name="file" required style="padding: 10px; cursor: pointer; border: none; background: transparent; width: 100%;">
+                <button type="submit" style="width: 100%;">Upload to AWS S3</button>
+            </form>
+
+            <!-- Uploaded Files Section -->
+            <div style="margin-top: 40px; text-align: left;">
+                <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">Your Uploaded Files</h3>
+                {% if files %}
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 0; margin: 0;">
+                        {% for file in files %}
+                            <li style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px;">
+                                <span style="word-break: break-all; font-weight: 500;">{{ file }}</span>
+                                <form action="{{ url_for('delete_file', filename=file) }}" method="post" style="margin: 0; display: inline;">
+                                    <button type="submit" style="background: #ef4444; box-shadow: none; font-size: 0.85rem; padding: 6px 14px; border-radius: 6px; width: auto; font-weight: 500;">Delete</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p style="color: var(--text-secondary); text-align: center; margin-top: 20px;">No files uploaded yet.</p>
+                {% endif %}
+            </div>
+
+            <div class="actions" style="margin-top: 40px;">
+                <a href="{{ url_for('logout') }}"><button style="background: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">Logout</button></a>
+            </div>
+        {% else %}
+            <h1>Welcome to CloudDrive 🚀</h1>
+            <p>Store your files securely in the cloud.</p>
+            <div class="actions">
+                <a href="{{ url_for('register') }}"><button>Register</button></a>
+                <a href="{{ url_for('login') }}"><button style="background: transparent; border: 1px solid var(--primary-color); color: var(--text-primary); box-shadow: none;">Login</button></a>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
