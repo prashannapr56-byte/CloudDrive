@@ -13,17 +13,39 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+def check_s3_config():
+    """Verify S3 credentials and return a list of missing/incorrect settings, or None if correct."""
+    missing = []
+    aws_id = app.config.get('AWS_ACCESS_KEY_ID')
+    aws_secret = app.config.get('AWS_SECRET_ACCESS_KEY')
+    bucket = app.config.get('AWS_S3_BUCKET')
+    
+    if not aws_id:
+        missing.append("AWS_ACCESS_KEY_ID is missing")
+    elif aws_id == 'your_access_key_id_here':
+        missing.append("AWS_ACCESS_KEY_ID is the default placeholder")
+        
+    if not aws_secret:
+        missing.append("AWS_SECRET_ACCESS_KEY is missing")
+    elif aws_secret == 'your_secret_access_key_here':
+        missing.append("AWS_SECRET_ACCESS_KEY is the default placeholder")
+        
+    if not bucket:
+        missing.append("AWS_S3_BUCKET is missing")
+    elif bucket == 'your_s3_bucket_name_here':
+        missing.append("AWS_S3_BUCKET is the default placeholder")
+        
+    return missing if missing else None
+
 # 1. Home Page / Dashboard Route
 @app.route('/')
 def index():
     files = []
     if session.get('username'):
-        bucket = app.config.get('AWS_S3_BUCKET')
-        aws_id = app.config.get('AWS_ACCESS_KEY_ID')
-        if bucket and aws_id and aws_id != 'your_access_key_id_here':
+        if not check_s3_config():
             from s3_helper import list_files_in_s3
             try:
-                all_files = list_files_in_s3(bucket)
+                all_files = list_files_in_s3(app.config.get('AWS_S3_BUCKET'))
                 user_prefix = f"{session['username']}/"
                 files = [f.replace(user_prefix, '', 1) for f in all_files if f.startswith(user_prefix)]
             except Exception as e:
@@ -111,12 +133,13 @@ def upload():
         flash('No file selected.', 'danger')
         return redirect(url_for('index'))
         
-    aws_id = app.config.get('AWS_ACCESS_KEY_ID')
-    bucket = app.config.get('AWS_S3_BUCKET')
-    
-    if not aws_id or aws_id == 'your_access_key_id_here' or not bucket or bucket == 'your_s3_bucket_name_here':
-        flash('AWS S3 is not configured yet! Please update your .env file with actual credentials.', 'danger')
+    s3_errors = check_s3_config()
+    if s3_errors:
+        error_msg = "AWS S3 is not configured yet! Missing or default settings: " + ", ".join(s3_errors)
+        flash(error_msg, 'danger')
         return redirect(url_for('index'))
+        
+    bucket = app.config.get('AWS_S3_BUCKET')
         
     from s3_helper import upload_file_to_s3
     user_prefix = f"{session['username']}/"
@@ -137,12 +160,13 @@ def delete_file(filename):
         flash('Please log in first.', 'danger')
         return redirect(url_for('login'))
         
-    bucket = app.config.get('AWS_S3_BUCKET')
-    aws_id = app.config.get('AWS_ACCESS_KEY_ID')
-    
-    if not aws_id or aws_id == 'your_access_key_id_here' or not bucket or bucket == 'your_s3_bucket_name_here':
-        flash('AWS S3 is not configured.', 'danger')
+    s3_errors = check_s3_config()
+    if s3_errors:
+        error_msg = "AWS S3 is not configured yet! Missing or default settings: " + ", ".join(s3_errors)
+        flash(error_msg, 'danger')
         return redirect(url_for('index'))
+        
+    bucket = app.config.get('AWS_S3_BUCKET')
         
     from s3_helper import delete_file_from_s3
     user_prefix = f"{session['username']}/"
