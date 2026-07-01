@@ -12,11 +12,12 @@ class Config:
     """Application configuration settings."""
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-please-change')
 
-    # SQLAlchemy configuration – uses MySQL via PyMySQL driver.
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL",
-        "mysql+pymysql://clouduser:StrongPassword123@localhost:3306/clouddrive"
-    )
+    # SQLAlchemy configuration – fallbacks to SQLite if no cloud database URL is provided.
+    # Automatically handles 'postgres://' schema mapping to 'postgresql://' for Render/Heroku compatibility.
+    _raw_db_url = os.getenv("DATABASE_URL")
+    if _raw_db_url and _raw_db_url.startswith("postgres://"):
+        _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = _raw_db_url or "sqlite:///clouddrive.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # AWS S3 Configurations

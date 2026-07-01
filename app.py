@@ -9,6 +9,10 @@ app.config.from_object(Config)
 # Initialize database
 db.init_app(app)
 
+# Auto-create tables if they don't exist
+with app.app_context():
+    db.create_all()
+
 # 1. Home Page / Dashboard Route
 @app.route('/')
 def index():
