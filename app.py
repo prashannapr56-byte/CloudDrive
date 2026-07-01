@@ -21,17 +21,17 @@ def check_s3_config():
     bucket = app.config.get('AWS_S3_BUCKET')
     
     if not aws_id:
-        missing.append("AWS_ACCESS_KEY_ID is missing")
+        missing.append("AWS_ACCESS_KEY_ID / S3_ACCESS_KEY_ID is missing")
     elif aws_id == 'your_access_key_id_here':
         missing.append("AWS_ACCESS_KEY_ID is the default placeholder")
         
     if not aws_secret:
-        missing.append("AWS_SECRET_ACCESS_KEY is missing")
+        missing.append("AWS_SECRET_ACCESS_KEY / S3_SECRET_ACCESS_KEY is missing")
     elif aws_secret == 'your_secret_access_key_here':
         missing.append("AWS_SECRET_ACCESS_KEY is the default placeholder")
         
     if not bucket:
-        missing.append("AWS_S3_BUCKET is missing")
+        missing.append("AWS_S3_BUCKET / S3_BUCKET is missing")
     elif bucket == 'your_s3_bucket_name_here':
         missing.append("AWS_S3_BUCKET is the default placeholder")
         

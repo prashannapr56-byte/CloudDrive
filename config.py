@@ -27,8 +27,8 @@ class Config:
         SQLALCHEMY_DATABASE_URI = "sqlite:///clouddrive.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # AWS S3 Configurations
-    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-    AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-    AWS_S3_BUCKET = os.getenv("AWS_S3_BUCKET")
+    # AWS S3 Configurations - supports S3_ prefixed fallbacks to bypass Vercel reserved keyword restrictions
+    AWS_ACCESS_KEY_ID = os.getenv("S3_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_ACCESS_KEY") or os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_REGION = os.getenv("S3_REGION") or os.getenv("AWS_REGION", "us-east-1")
+    AWS_S3_BUCKET = os.getenv("S3_BUCKET") or os.getenv("AWS_S3_BUCKET")
