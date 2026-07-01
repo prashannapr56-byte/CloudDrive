@@ -18,11 +18,12 @@ with app.app_context():
 def index():
     files = []
     if session.get('username'):
-        # List files for this specific user if S3 is configured
-        if app.config.get('AWS_S3_BUCKET') and app.config.get('AWS_ACCESS_KEY_ID') and app.config.get('AWS_ACCESS_KEY_ID') != 'your_access_key_id_here':
+        bucket = app.config.get('AWS_S3_BUCKET')
+        aws_id = app.config.get('AWS_ACCESS_KEY_ID')
+        if bucket and aws_id and aws_id != 'your_access_key_id_here':
             from s3_helper import list_files_in_s3
             try:
-                all_files = list_files_in_s3(app.config['AWS_S3_BUCKET'])
+                all_files = list_files_in_s3(bucket)
                 user_prefix = f"{session['username']}/"
                 files = [f.replace(user_prefix, '', 1) for f in all_files if f.startswith(user_prefix)]
             except Exception as e:
